@@ -1,0 +1,35 @@
+name: go vet
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  vet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run go vet
+        run: |
+          set +e
+          go vet ./... > vet.txt 2>&1
+          status=$?
+          cat vet.txt
+
+          {
+            echo "## go vet"
+            if [ $status -eq 0 ]; then
+              echo "no problems found"
+            else
+              echo '```'
+              cat vet.txt
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit $status
